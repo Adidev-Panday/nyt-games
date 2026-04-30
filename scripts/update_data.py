@@ -51,14 +51,12 @@ def ensure_entry(data, iso):
 # ── Wordle ────────────────────────────────────────────────────────────────────
 
 def fetch_wordle_for_date(d):
-    url = (
-        f"https://raw.githubusercontent.com/TheDude53/wordle-answers/master/"
-        f"{d.year}/{d.month:02d}/{d.day:02d}"
-    )
+    # Use the NYT's own Wordle API — same pattern as Strands
+    url = f"https://www.nytimes.com/svc/wordle/v2/{d.isoformat()}.json"
     try:
         r = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
         if r.status_code == 200:
-            word = r.text.strip().upper()
+            word = r.json().get("solution", "").upper()
             if len(word) == 5 and word.isalpha():
                 return word
     except Exception:
