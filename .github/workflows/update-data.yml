@@ -1,0 +1,52 @@
+name: Daily puzzle data update
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 08:00 UTC — first attempt
+    - cron: '0 16 * * *'  # 16:00 UTC — safety-net fallback
+  workflow_dispatch:       # manual trigger from Actions tab
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # needed to push back to the repo
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so git push works cleanly
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run update script
+        run: python scripts/update_data.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet data.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push updated data
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "chore: daily puzzle data update [skip ci]"
+          git push
+
+      - name: Nothing to commit
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "No new data today, skipping commit"

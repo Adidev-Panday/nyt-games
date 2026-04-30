@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NYT Puzzle Answers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="44663d7a-c4fe-4e49-b809-d8f1e57036cf"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #FAF8F5;
+      --text:     #1A1A1A;
+      --muted:    #888;
+      --border:   #E5E0D8;
+      --yellow:   #F9DF6D;
+      --green:    #A0C35A;
+      --blue:     #5B9BD5;
+      --purple:   #9B59B6;
+      --col:      560px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 0 16px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      max-width: var(--col);
+      margin: 0 auto;
+      padding-top: 52px;
+      animation: fadeUp .5s ease both;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 6vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.1;
+    }
+    .page-subtitle {
+      font-size: .75rem;
+      font-weight: 400;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 9px;
+    }
+
+    .divider {
+      max-width: var(--col);
+      margin: 22px auto 0;
+      border: none;
+      border-top: 1px solid var(--border);
+      animation: fadeUp .5s .05s ease both;
+    }
+
+    /* ── Date Row ── */
+    .date-row {
+      max-width: var(--col);
+      margin: 0 auto;
+      padding: 26px 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeUp .5s .1s ease both;
+    }
+    .date-label {
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .date-nav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      padding: 4px 2px;
+      display: flex;
+      align-items: center;
+      opacity: .55;
+      transition: opacity .15s;
+      flex-shrink: 0;
+    }
+    .date-nav-btn:hover { opacity: 1; }
+    .date-nav-btn:disabled { opacity: .2; cursor: default; }
+    .date-nav-btn svg { display: block; }
+
+    .date-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-bottom: 1.5px solid var(--text);
+      padding-bottom: 3px;
+      flex: 1;
+      min-width: 0;
+    }
+    #dateDisplay {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1rem, 3.5vw, 1.3rem);
+      font-weight: 600;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      min-width: 0;
+    }
+    #dateDisplay::placeholder { color: var(--muted); font-style: italic; font-weight: 400; }
+    #datePicker {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      right: 0;
+      top: 0;
+      pointer-events: none;
+    }
+    .cal-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      color: var(--text);
+      opacity: .5;
+      transition: opacity .15s;
+      flex-shrink: 0;
+    }
+    .cal-btn:hover { opacity: 1; }
+
+    .date-hint {
+      max-width: var(--col);
+      margin: 6px auto 0;
+      font-size: .68rem;
+      color: var(--muted);
+      animation: fadeUp .5s .12s ease both;
+    }
+
+    /* ── Puzzle Selector ── */
+    .puzzle-selector {
+      max-width: var(--col);
+      margin: 20px auto 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      animation: fadeUp .5s .15s ease both;
+    }
+    .pill-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 14px 22px;
+      border-radius: 10px;
+      border: none;
+      border-left: 4px solid transparent;
+      background: #fff;
+      cursor: pointer;
+      transition: background .15s, color .15s, box-shadow .15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .pill-btn[data-puzzle="wordle"]      { border-left-color: #6AAA64; color: #6AAA64; }
+    .pill-btn[data-puzzle="connections"] { border-left-color: #9B59B6; color: #9B59B6; }
+    .pill-btn[data-puzzle="spelling_bee"]{ border-left-color: #E8A838; color: #E8A838; }
+    .pill-btn[data-puzzle="wordle"].active {
+      background: #6AAA64; color: #fff;
+      border-left-color: #6AAA64;
+      box-shadow: 0 3px 10px rgba(106,170,100,.4);
+    }
+    .pill-btn[data-puzzle="connections"].active {
+      background: #9B59B6; color: #fff;
+      border-left-color: #9B59B6;
+      box-shadow: 0 3px 10px rgba(155,89,182,.4);
+    }
+    .pill-btn[data-puzzle="spelling_bee"].active {
+      background: #E8A838; color: #fff;
+      border-left-color: #E8A838;
+      box-shadow: 0 3px 10px rgba(232,168,56,.4);
+    }
+
+    /* ── Results ── */
+    .results {
+      max-width: var(--col);
+      margin: 32px auto 0;
+      min-height: 80px;
+    }
+    .results.fade-out        { animation: fadeOut .1s ease forwards; }
+    .results.fade-in         { animation: fadeIn .2s ease forwards; }
+    .results.slide-out-left  { animation: slideOutLeft .15s ease forwards; }
+    .results.slide-out-right { animation: slideOutRight .15s ease forwards; }
+    .results.slide-in-left   { animation: slideInLeft .2s ease forwards; }
+    .results.slide-in-right  { animation: slideInRight .2s ease forwards; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: .67rem;
+      font-weight: 500;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Empty / info states ── */
+    .empty-state, .info-note {
+      font-size: .9rem;
+      color: var(--muted);
+      padding: 10px 0;
+      font-style: italic;
+    }
+
+    /* ── Wordle tiles ── */
+    .tiles { display: flex; gap: 6px; }
+    .tile {
+      width: 48px; height: 48px;
+      background: var(--text);
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      opacity: 0;
+      transform: scale(.8);
+    }
+    .tile.pop { animation: tilePop .22s ease forwards; }
+
+    /* ── Connections cards ── */
+    .conn-cards { display: flex; flex-direction: column; gap: 10px; }
+    .conn-card {
+      border-radius: 10px;
+      padding: 14px 16px;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .conn-card.slide-in { animation: cardSlide .28s ease forwards; }
+    .conn-card[data-color="yellow"] { background: #F9DF6Dd8; }
+    .conn-card[data-color="green"]  { background: #A0C35Ad8; }
+    .conn-card[data-color="blue"]   { background: #5B9BD5d8; }
+    .conn-card[data-color="purple"] { background: #9B59B6c5; }
+    .conn-category {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+    .conn-words { display: flex; flex-wrap: wrap; gap: 5px; }
+    .conn-pill {
+      font-size: .76rem;
+      font-weight: 500;
+      background: rgba(255,255,255,.55);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    /* ── Honeycomb ── */
+    .honeycomb-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 26px;
+    }
+    .honeycomb-svg { max-width: 260px; width: 100%; height: auto; }
+    .hex-letter {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      fill: var(--text);
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    /* ── Spelling Bee answers ── */
+    .pangram-list { margin-bottom: 18px; }
+    .pangram-label {
+      font-size: .67rem;
+      font-weight: 500;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .pangrams { display: flex; flex-wrap: wrap; gap: 7px; }
+    .pangram-word {
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      padding-bottom: 2px;
+      border-bottom: 2px solid var(--yellow);
+      color: var(--text);
+    }
+    .answers-label {
+      font-size: .67rem;
+      font-weight: 500;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .len-group { margin-bottom: 14px; }
+    .len-heading {
+      font-size: .64rem;
+      color: var(--muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .answer-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+    .answer-pill {
+      font-size: .75rem;
+      font-weight: 400;
+      background: #EDE9E2;
+      border-radius: 20px;
+      padding: 3px 10px;
+      color: var(--text);
+    }
+    .answer-pill.is-pangram { background: #F9DF6D; font-weight: 600; }
+
+    /* ── Puzzle difficulty rating widget ── */
+    .rating-widget {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .rating-label {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .star-row { display: flex; gap: 2px; }
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #d0c9be;
+      padding: 2px 3px;
+      transition: color .1s, transform .1s;
+      line-height: 1;
+    }
+    .star-btn.lit { color: #E8A838; }
+    .star-btn:hover { transform: scale(1.15); }
+    .rating-result {
+      font-size: .85rem;
+      color: var(--muted);
+      padding-top: 2px;
+    }
+    .rating-result .rw-star { color: #E8A838; }
+
+    /* ── App rating floating button ── */
+    #app-rate-btn {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 100;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .75rem;
+      font-weight: 500;
+      padding: 7px 13px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.92);
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+      backdrop-filter: blur(6px);
+      transition: box-shadow .15s, opacity .15s;
+    }
+    #app-rate-btn:hover { box-shadow: 0 2px 10px rgba(0,0,0,.13); }
+    #app-rate-btn.rated { opacity: .5; cursor: default; pointer-events: none; }
+
+    /* ── App rating modal ── */
+    #app-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,26,26,.45);
+      backdrop-filter: blur(5px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #app-modal-overlay[hidden] { display: none; }
+    #app-modal {
+      background: #fff;
+      border-radius: 18px;
+      padding: 36px 32px 28px;
+      max-width: 380px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 16px 50px rgba(0,0,0,.18);
+    }
+    #modal-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+      padding: 4px;
+    }
+    #modal-close-btn:hover { color: var(--text); }
+    #modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    #modal-star-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+    .modal-star {
+      background: none;
+      border: none;
+      font-size: 2.1rem;
+      cursor: pointer;
+      color: #d0c9be;
+      transition: color .1s, transform .1s;
+      line-height: 1;
+      padding: 2px;
+    }
+    .modal-star.lit { color: #E8A838; }
+    .modal-star:hover { transform: scale(1.1); }
+    #modal-comment {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 14px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .15s;
+      display: block;
+    }
+    #modal-comment:focus { border-color: #aaa; }
+    #modal-submit {
+      width: 100%;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+      display: block;
+    }
+    #modal-submit:hover { opacity: .82; }
+    #modal-submit:disabled { opacity: .35; cursor: default; }
+    #modal-thanks {
+      text-align: center;
+      font-size: .95rem;
+      color: var(--muted);
+      padding: 8px 0 4px;
+    }
+
+    /* ── Admin panel ── */
+    #admin-panel {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 44px 16px 80px;
+    }
+    .admin-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 12px;
+    }
+    .admin-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .admin-subtitle {
+      font-size: .72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      margin-top: 6px;
+    }
+    .admin-exit-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: .78rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      color: var(--text);
+      white-space: nowrap;
+      transition: box-shadow .15s;
+      flex-shrink: 0;
+    }
+    .admin-exit-btn:hover { box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .admin-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .admin-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 7px;
+    }
+    .stat-label {
+      font-size: .68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      line-height: 1.3;
+    }
+    .app-ratings-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 380px;
+      overflow-y: auto;
+      margin-bottom: 36px;
+      padding-right: 4px;
+    }
+    .app-rating-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .app-rating-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .app-rating-stars { color: #E8A838; font-size: .95rem; letter-spacing: 1px; }
+    .app-rating-time { font-size: .7rem; color: var(--muted); }
+    .app-rating-comment { font-size: .85rem; color: var(--text); line-height: 1.4; }
+    .app-rating-no-comment { font-size: .85rem; color: var(--muted); font-style: italic; }
+    .table-scroll { overflow-x: auto; margin-bottom: 36px; }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      min-width: 400px;
+    }
+    .admin-table th {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-table td {
+      font-size: .88rem;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .top10-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .top10-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .top10-card-title {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .top10-list { list-style: none; }
+    .top10-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: .82rem;
+      gap: 8px;
+    }
+    .top10-item:last-child { border-bottom: none; }
+    .top10-meta { display: flex; flex-direction: column; gap: 1px; }
+    .top10-date { color: var(--text); }
+    .top10-puzzle { color: var(--muted); font-size: .7rem; }
+    .top10-score { font-weight: 600; color: var(--text); flex-shrink: 0; }
+    .admin-empty {
+      color: var(--muted);
+      font-size: .88rem;
+      font-style: italic;
+      padding: 12px 0;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp       { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeOut      { to   { opacity:0; } }
+    @keyframes fadeIn       { from { opacity:0; } to { opacity:1; } }
+    @keyframes slideOutLeft { to   { opacity:0; transform:translateX(-30px); } }
+    @keyframes slideOutRight{ to   { opacity:0; transform:translateX(30px); } }
+    @keyframes slideInLeft  { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes slideInRight { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes tilePop      { to   { opacity:1; transform:scale(1); } }
+    @keyframes cardSlide    { to   { opacity:1; transform:translateY(0); } }
+
+    /* ── Mobile ── */
+    @media (max-width:540px) {
+      .header { padding-top: 32px; }
+      .tile { width:40px; height:40px; font-size:.95rem; }
+      .puzzle-selector { flex-direction: column; align-items: stretch; }
+      .pill-btn { justify-content: center; }
+      .honeycomb-svg { max-width: 200px; }
+      .stat-cards { grid-template-columns: repeat(2, 1fr); }
+      .top10-grid { grid-template-columns: 1fr; }
+      #app-modal { padding: 28px 20px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating app rating button -->
+<button id="app-rate-btn" aria-label="Rate this app">⭐ Rate this app</button>
+
+<!-- App rating modal -->
+<div id="app-modal-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="modal-title">
+  <div id="app-modal">
+    <button id="modal-close-btn" aria-label="Close">×</button>
+    <h2 id="modal-title">Rate NYT Puzzle Answers</h2>
+    <div id="modal-star-row" aria-label="Star rating">
+      <button class="modal-star" data-val="1" aria-label="1 star">★</button>
+      <button class="modal-star" data-val="2" aria-label="2 stars">★</button>
+      <button class="modal-star" data-val="3" aria-label="3 stars">★</button>
+      <button class="modal-star" data-val="4" aria-label="4 stars">★</button>
+      <button class="modal-star" data-val="5" aria-label="5 stars">★</button>
+    </div>
+    <textarea id="modal-comment" placeholder="Leave a comment (optional)" rows="3"></textarea>
+    <button id="modal-submit" disabled>Submit</button>
+    <p id="modal-thanks" hidden>Thank you for your rating! ✨</p>
+  </div>
+</div>
+
+<!-- Main site -->
+<div id="main-site">
+  <header class="header">
+    <h1 class="page-title">NYT Puzzle Answers</h1>
+    <p class="page-subtitle">Wordle &middot; Connections &middot; Spelling Bee</p>
+  </header>
+
+  <hr class="divider"/>
+
+  <div class="date-row">
+    <span class="date-label">Date</span>
+
+    <button class="date-nav-btn" id="prevDay" title="Previous day" aria-label="Previous day">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <polyline points="10,3 5,8 10,13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="date-input-wrap">
+      <input type="text" id="dateDisplay" placeholder="Jan 15 2024  or  YYYY-MM-DD" autocomplete="off" spellcheck="false"/>
+      <input type="date" id="datePicker" min="2000-01-01"/>
+      <button class="cal-btn" id="calBtn" title="Pick a date" aria-label="Open calendar">
+        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+          <rect x=".75" y="2.75" width="15.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.4"/>
+          <line x1=".75" y1="7" x2="16.25" y2="7" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="4.5" y1=".5" x2="4.5" y2="4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="12.5" y1=".5" x2="12.5" y2="4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <button class="date-nav-btn" id="nextDay" title="Next day" aria-label="Next day">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <polyline points="6,3 11,8 6,13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <p class="date-hint">Try: "Jan 15 2024" · "2024-01-15" · "01/15/2024"</p>
+
+  <div class="puzzle-selector" id="puzzleSelector">
+    <button class="pill-btn active" data-puzzle="wordle">Wordle</button>
+    <button class="pill-btn" data-puzzle="connections">Connections</button>
+    <button class="pill-btn" data-puzzle="spelling_bee">Spelling Bee</button>
+  </div>
+
+  <div class="results" id="results"></div>
+</div>
+
+<!-- Admin dashboard -->
+<div id="admin-panel" hidden>
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">Admin Dashboard</div>
+      <div class="admin-subtitle">NYT Puzzle Answers</div>
+    </div>
+    <button class="admin-exit-btn" id="admin-exit-btn">Exit</button>
+  </div>
+  <hr class="admin-divider"/>
+
+  <div class="admin-section-title">Overview</div>
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-value" id="stat-puzzle-ratings">—</div>
+      <div class="stat-label">Total Puzzle Ratings</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-app-ratings">—</div>
+      <div class="stat-label">Total App Ratings</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-avg-score">—</div>
+      <div class="stat-label">Average App Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-rated-today">—</div>
+      <div class="stat-label">Puzzles Rated Today</div>
+    </div>
+  </div>
+
+  <div class="admin-section-title">App Ratings</div>
+  <div class="app-ratings-feed" id="app-ratings-feed">
+    <p class="admin-empty">Loading…</p>
+  </div>
+
+  <div class="admin-section-title">Puzzle Ratings Breakdown</div>
+  <div class="table-scroll">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Puzzle</th>
+          <th>Total Ratings</th>
+          <th>Mean Difficulty</th>
+          <th>Most Recent Date</th>
+        </tr>
+      </thead>
+      <tbody id="puzzle-breakdown-body">
+        <tr><td colspan="4" class="admin-empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-section-title">Top 10 Hardest &amp; Easiest Dates</div>
+  <div class="top10-grid">
+    <div class="top10-card">
+      <div class="top10-card-title">🔥 Hardest (mean ≥ 3 ratings)</div>
+      <ul class="top10-list" id="top10-hardest">
+        <li class="admin-empty">Loading…</li>
+      </ul>
+    </div>
+    <div class="top10-card">
+      <div class="top10-card-title">🌿 Easiest (mean ≥ 3 ratings)</div>
+      <ul class="top10-list" id="top10-easiest">
+        <li class="admin-empty">Loading…</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Supabase
+═══════════════════════════════════════════════════════════════ */
+const SB_URL = 'https://ytkecdkyxectfxbaotgs.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0a2VjZGt5eGVjdGZ4YmFvdGdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzAwMzEsImV4cCI6MjA5MzEwNjAzMX0.mxlV7jJASiBEhOXk5shEk58lQXyL6JA543Ca3lUSUDk';
+
+function sbFetch(path, opts) {
+  const headers = Object.assign({
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+  }, (opts && opts.headers) || {});
+  return fetch(SB_URL + path, Object.assign({}, opts, { headers }));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Route detection
+═══════════════════════════════════════════════════════════════ */
+if (window.location.pathname === '/oreomilo') {
+  document.getElementById('main-site').hidden  = true;
+  document.getElementById('app-rate-btn').hidden = true;
+  document.getElementById('admin-panel').hidden  = false;
+  initAdminDashboard();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   State
+═══════════════════════════════════════════════════════════════ */
+let DATA          = null;
+let currentDate   = '';
+let currentPuzzle = 'wordle';
+
+const PUZZLE_LAUNCH = {
+  wordle:      '2021-06-19',
+  connections: '2023-06-12',
+  spelling_bee:'2023-01-01',
+};
+const PUZZLE_NAMES = {
+  wordle: 'Wordle', connections: 'Connections', spelling_bee: 'Spelling Bee',
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Date utilities
+═══════════════════════════════════════════════════════════════ */
+function todayISO() {
+  return new Date().toLocaleDateString('en-CA');
+}
+
+function isoToDisplay(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+}
+
+function parseDate(raw) {
+  const s = raw.trim();
+  if (!s) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + 'T00:00:00');
+    return isNaN(d) ? null : s;
+  }
+  const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mdy) {
+    const d = new Date(+mdy[3], +mdy[1] - 1, +mdy[2]);
+    return isNaN(d) ? null : d.toLocaleDateString('en-CA');
+  }
+  const d = new Date(s);
+  if (!isNaN(d)) return d.toLocaleDateString('en-CA');
+  return null;
+}
+
+function clampDate(iso) {
+  const today = todayISO();
+  if (iso > today) return today;
+  if (iso < '2000-01-01') return '2000-01-01';
+  return iso;
+}
+
+function shiftDate(iso, delta) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const next = new Date(y, m - 1, d + delta);
+  return next.toLocaleDateString('en-CA');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DOM refs
+═══════════════════════════════════════════════════════════════ */
+const dateDisplay = document.getElementById('dateDisplay');
+const datePicker  = document.getElementById('datePicker');
+const calBtn      = document.getElementById('calBtn');
+const prevBtn     = document.getElementById('prevDay');
+const nextBtn     = document.getElementById('nextDay');
+const selector    = document.getElementById('puzzleSelector');
+const results     = document.getElementById('results');
+
+/* ═══════════════════════════════════════════════════════════════
+   Navigation helpers
+═══════════════════════════════════════════════════════════════ */
+function syncUI(iso) {
+  dateDisplay.value = isoToDisplay(iso);
+  datePicker.value  = iso;
+  nextBtn.disabled  = (iso >= todayISO());
+}
+
+function applyDate(iso, direction) {
+  const clamped = clampDate(iso);
+  if (clamped === currentDate && direction === 0) return;
+  const prev = currentDate;
+  currentDate = clamped;
+  syncUI(clamped);
+  if (direction !== 0 && prev) {
+    animateResults(
+      direction < 0 ? 'slide-out-left'  : 'slide-out-right',
+      direction < 0 ? 'slide-in-right'  : 'slide-in-left'
+    );
+  } else {
+    transitionResults();
+  }
+}
+
+function applyPuzzle(puzzle) {
+  if (puzzle === currentPuzzle) return;
+  currentPuzzle = puzzle;
+  selector.querySelectorAll('.pill-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.puzzle === puzzle);
+  });
+  transitionResults();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Animation
+═══════════════════════════════════════════════════════════════ */
+function clearAnims() { results.className = 'results'; }
+
+function transitionResults() {
+  clearAnims();
+  results.classList.add('fade-out');
+  setTimeout(() => { clearAnims(); renderResults(); results.classList.add('fade-in'); }, 100);
+}
+
+function animateResults(outCls, inCls) {
+  clearAnims();
+  results.classList.add(outCls);
+  setTimeout(() => { clearAnims(); renderResults(); results.classList.add(inCls); }, 150);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Rendering
+═══════════════════════════════════════════════════════════════ */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderResults() {
+  if (!DATA) { results.innerHTML = ''; return; }
+
+  const entry  = DATA[currentDate];
+  const launch = PUZZLE_LAUNCH[currentPuzzle];
+  const name   = PUZZLE_NAMES[currentPuzzle];
+
+  if (!entry) {
+    results.innerHTML = `<p class="empty-state">No data available for ${isoToDisplay(currentDate)}.</p>`;
+    return;
+  }
+
+  const puzzleData = entry[currentPuzzle];
+
+  if (!puzzleData) {
+    if (currentDate < launch) {
+      results.innerHTML = `<p class="info-note">${name} launched on ${isoToDisplay(launch)} — no data before this date.</p>`;
+    } else {
+      results.innerHTML = `<p class="info-note">No ${name} data found for ${isoToDisplay(currentDate)}.</p>`;
+    }
+    return;
+  }
+
+  switch (currentPuzzle) {
+    case 'wordle':       renderWordle(puzzleData);      break;
+    case 'connections':  renderConnections(puzzleData); break;
+    case 'spelling_bee': renderSpellingBee(puzzleData); break;
+  }
+
+  appendRatingWidget(currentDate, currentPuzzle);
+}
+
+/* ── Wordle ── */
+function renderWordle(word) {
+  let html = `<p class="section-label">Wordle</p><div class="tiles">`;
+  for (const ch of word) html += `<div class="tile">${esc(ch)}</div>`;
+  html += `</div>`;
+  results.innerHTML = html;
+  results.querySelectorAll('.tile').forEach((t, i) => {
+    setTimeout(() => t.classList.add('pop'), i * 80);
+  });
+}
+
+/* ── Connections ── */
+function renderConnections(groups) {
+  let html = `<p class="section-label">Connections</p><div class="conn-cards">`;
+  for (const g of groups) {
+    html += `<div class="conn-card" data-color="${esc(g.color)}">
+      <div class="conn-category">${esc(g.category)}</div>
+      <div class="conn-words">`;
+    for (const w of g.words) html += `<span class="conn-pill">${esc(w)}</span>`;
+    html += `</div></div>`;
+  }
+  html += `</div>`;
+  results.innerHTML = html;
+  results.querySelectorAll('.conn-card').forEach((c, i) => {
+    setTimeout(() => c.classList.add('slide-in'), i * 100);
+  });
+}
+
+/* ── Spelling Bee ── */
+function buildHoneycomb(center, outer) {
+  const R = 36, cx = 130, cy = 108;
+  const positions = [
+    [cx, cy],
+    [cx,      cy - 72],
+    [cx + 62, cy - 36],
+    [cx + 62, cy + 36],
+    [cx,      cy + 72],
+    [cx - 62, cy + 36],
+    [cx - 62, cy - 36],
+  ];
+  const hexPath = (x, y, r) => {
+    const pts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 180 * (60 * i - 30);
+      pts.push(`${(x + r * Math.cos(a)).toFixed(1)},${(y + r * Math.sin(a)).toFixed(1)}`);
+    }
+    return `M${pts.join('L')}Z`;
+  };
+  const letters = [center, ...outer.slice(0, 6)];
+  let svg = `<svg class="honeycomb-svg" viewBox="0 0 260 216" xmlns="http://www.w3.org/2000/svg">`;
+  positions.forEach(([x, y], i) => {
+    const fill = i === 0 ? '#F9DF6D' : '#e8e3da';
+    svg += `<path d="${hexPath(x, y, R - 2)}" fill="${fill}" stroke="${fill}" stroke-width="2" stroke-linejoin="round"/>`;
+    svg += `<text x="${x}" y="${y}" class="hex-letter">${esc(letters[i] || '')}</text>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderSpellingBee(bee) {
+  const { center, letters, pangrams, answers } = bee;
+  const pangramSet = new Set(pangrams);
+  const byLen = {};
+  for (const w of answers) {
+    const l = w.length;
+    if (!byLen[l]) byLen[l] = [];
+    byLen[l].push(w);
+  }
+  let html = `<p class="section-label">Spelling Bee</p>`;
+  html += `<div class="honeycomb-wrap">${buildHoneycomb(center, letters)}</div>`;
+  if (pangrams.length) {
+    html += `<div class="pangram-list"><p class="pangram-label">Pangram${pangrams.length > 1 ? 's' : ''}</p><div class="pangrams">`;
+    for (const p of pangrams) html += `<span class="pangram-word">${esc(p)}</span>`;
+    html += `</div></div>`;
+  }
+  html += `<p class="answers-label">All answers (${answers.length})</p>`;
+  for (const len of Object.keys(byLen).sort((a, b) => +a - +b)) {
+    html += `<div class="len-group"><p class="len-heading">${len} letters</p><div class="answer-pills">`;
+    for (const w of byLen[len]) {
+      html += `<span class="answer-pill${pangramSet.has(w) ? ' is-pangram' : ''}">${esc(w)}</span>`;
+    }
+    html += `</div></div>`;
+  }
+  results.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Puzzle difficulty rating widget
+═══════════════════════════════════════════════════════════════ */
+function appendRatingWidget(date, puzzle) {
+  const sessionKey = 'rated_' + puzzle + '_' + date;
+  const widget = document.createElement('div');
+  widget.className = 'rating-widget';
+
+  if (sessionStorage.getItem(sessionKey)) {
+    widget.innerHTML = `<p class="rating-label">How difficult was this?</p>
+      <p class="rating-result rw-display">Loading…</p>`;
+    results.appendChild(widget);
+    loadRatingDisplay(date, puzzle, widget.querySelector('.rw-display'));
+    return;
+  }
+
+  widget.innerHTML = `<p class="rating-label">How difficult was this?</p>
+    <div class="star-row">
+      <button class="star-btn" data-val="1" aria-label="Rate 1 star">★</button>
+      <button class="star-btn" data-val="2" aria-label="Rate 2 stars">★</button>
+      <button class="star-btn" data-val="3" aria-label="Rate 3 stars">★</button>
+      <button class="star-btn" data-val="4" aria-label="Rate 4 stars">★</button>
+      <button class="star-btn" data-val="5" aria-label="Rate 5 stars">★</button>
+    </div>
+    <p class="rating-result rw-display" style="display:none"></p>`;
+  results.appendChild(widget);
+
+  const starRow  = widget.querySelector('.star-row');
+  const display  = widget.querySelector('.rw-display');
+  const btns     = widget.querySelectorAll('.star-btn');
+
+  btns.forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      const v = +btn.dataset.val;
+      btns.forEach(b => b.classList.toggle('lit', +b.dataset.val <= v));
+    });
+    btn.addEventListener('mouseleave', () => {
+      btns.forEach(b => b.classList.remove('lit'));
+    });
+    btn.addEventListener('click', async () => {
+      const val = +btn.dataset.val;
+      btns.forEach(b => { b.disabled = true; b.classList.toggle('lit', +b.dataset.val <= val); });
+      try {
+        await sbFetch('/rest/v1/puzzle_ratings', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ date, puzzle, difficulty: val }),
+        });
+      } catch (e) {}
+      sessionStorage.setItem(sessionKey, '1');
+      starRow.style.display = 'none';
+      display.style.display = '';
+      display.textContent = 'Loading…';
+      loadRatingDisplay(date, puzzle, display);
+    });
+  });
+}
+
+async function loadRatingDisplay(date, puzzle, el) {
+  try {
+    const r = await sbFetch(
+      `/rest/v1/puzzle_ratings?date=eq.${date}&puzzle=eq.${puzzle}&select=difficulty`
+    );
+    const rows = await r.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      el.innerHTML = `<span class="rw-star">★</span> Be the first to rate!`;
+      return;
+    }
+    const mean = rows.reduce((s, row) => s + row.difficulty, 0) / rows.length;
+    el.innerHTML = `<span class="rw-star">★</span> ${mean.toFixed(1)} &middot; ${rows.length} rating${rows.length !== 1 ? 's' : ''}`;
+  } catch (e) {
+    el.textContent = '—';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   App rating modal
+═══════════════════════════════════════════════════════════════ */
+(function initAppRating() {
+  const overlay   = document.getElementById('app-modal-overlay');
+  const rateBtn   = document.getElementById('app-rate-btn');
+  const closeBtn  = document.getElementById('modal-close-btn');
+  const submitBtn = document.getElementById('modal-submit');
+  const comment   = document.getElementById('modal-comment');
+  const thanks    = document.getElementById('modal-thanks');
+  const stars     = document.querySelectorAll('.modal-star');
+  let selected    = 0;
+
+  if (sessionStorage.getItem('app_rated')) {
+    rateBtn.textContent = '⭐ Rated';
+    rateBtn.classList.add('rated');
+  }
+
+  rateBtn.addEventListener('click', () => { overlay.hidden = false; });
+
+  function resetModal() {
+    selected = 0;
+    stars.forEach(s => s.classList.remove('lit'));
+    comment.value = '';
+    comment.style.display = 'block';
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = true;
+    thanks.hidden = true;
+  }
+
+  function closeModal() {
+    overlay.hidden = true;
+    resetModal();
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+  stars.forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      const v = +star.dataset.val;
+      stars.forEach(s => s.classList.toggle('lit', +s.dataset.val <= v));
+    });
+    star.addEventListener('mouseleave', () => {
+      stars.forEach(s => s.classList.toggle('lit', +s.dataset.val <= selected));
+    });
+    star.addEventListener('click', () => {
+      selected = +star.dataset.val;
+      stars.forEach(s => s.classList.toggle('lit', +s.dataset.val <= selected));
+      submitBtn.disabled = false;
+    });
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    if (!selected) return;
+    submitBtn.disabled = true;
+    const commentVal = comment.value.trim() || null;
+    try {
+      await sbFetch('/rest/v1/app_ratings', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ stars: selected, comment: commentVal }),
+      });
+    } catch (e) {}
+    sessionStorage.setItem('app_rated', '1');
+    rateBtn.textContent = '⭐ Rated';
+    rateBtn.classList.add('rated');
+    comment.style.display  = 'none';
+    submitBtn.style.display = 'none';
+    thanks.hidden = false;
+    setTimeout(closeModal, 2000);
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   Admin dashboard
+═══════════════════════════════════════════════════════════════ */
+async function initAdminDashboard() {
+  document.getElementById('admin-exit-btn').addEventListener('click', () => {
+    window.location.pathname = '/';
+  });
+
+  const today = todayISO();
+  let puzzleRatings = [], appRatings = [];
+
+  try {
+    const [pr, ar] = await Promise.all([
+      sbFetch('/rest/v1/puzzle_ratings?select=*').then(r => r.json()),
+      sbFetch('/rest/v1/app_ratings?select=*&order=created_at.desc').then(r => r.json()),
+    ]);
+    if (Array.isArray(pr)) puzzleRatings = pr;
+    if (Array.isArray(ar)) appRatings    = ar;
+  } catch (e) {}
+
+  /* Stat cards */
+  document.getElementById('stat-puzzle-ratings').textContent = puzzleRatings.length;
+  document.getElementById('stat-app-ratings').textContent    = appRatings.length;
+  document.getElementById('stat-avg-score').textContent      = appRatings.length
+    ? (appRatings.reduce((s, r) => s + r.stars, 0) / appRatings.length).toFixed(1)
+    : '—';
+  document.getElementById('stat-rated-today').textContent =
+    puzzleRatings.filter(r => r.date === today).length;
+
+  /* App ratings feed */
+  const feed = document.getElementById('app-ratings-feed');
+  if (!appRatings.length) {
+    feed.innerHTML = '<p class="admin-empty">No app ratings yet.</p>';
+  } else {
+    feed.innerHTML = appRatings.map(r => {
+      const filledStars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+      const ts = r.created_at ? fmtAdminDate(r.created_at) : '—';
+      const commentHtml = r.comment
+        ? `<div class="app-rating-comment">${esc(r.comment)}</div>`
+        : `<div class="app-rating-no-comment">No comment</div>`;
+      return `<div class="app-rating-card">
+        <div class="app-rating-top">
+          <span class="app-rating-stars">${filledStars}</span>
+          <span class="app-rating-time">${ts}</span>
+        </div>
+        ${commentHtml}
+      </div>`;
+    }).join('');
+  }
+
+  /* Puzzle ratings breakdown */
+  const puzzleKeys = ['wordle', 'connections', 'spelling_bee'];
+  document.getElementById('puzzle-breakdown-body').innerHTML = puzzleKeys.map(p => {
+    const rows   = puzzleRatings.filter(r => r.puzzle === p);
+    const total  = rows.length;
+    const mean   = total ? (rows.reduce((s, r) => s + r.difficulty, 0) / total).toFixed(2) : '—';
+    const recent = total ? rows.map(r => r.date).sort().at(-1) : '—';
+    return `<tr>
+      <td>${PUZZLE_NAMES[p]}</td>
+      <td>${total}</td>
+      <td>${mean}</td>
+      <td>${recent}</td>
+    </tr>`;
+  }).join('');
+
+  /* Top 10 hardest / easiest */
+  const groups = {};
+  for (const r of puzzleRatings) {
+    const k = r.puzzle + '|||' + r.date;
+    if (!groups[k]) groups[k] = { puzzle: r.puzzle, date: r.date, vals: [] };
+    groups[k].vals.push(r.difficulty);
+  }
+  const qualified = Object.values(groups)
+    .filter(g => g.vals.length >= 3)
+    .map(g => ({
+      puzzle: g.puzzle,
+      date:   g.date,
+      mean:   g.vals.reduce((s, v) => s + v, 0) / g.vals.length,
+    }));
+
+  const byMeanDesc = [...qualified].sort((a, b) => b.mean - a.mean);
+  const byMeanAsc  = [...qualified].sort((a, b) => a.mean - b.mean);
+
+  function renderTop10(listEl, items) {
+    if (!items.length) {
+      listEl.innerHTML = '<li class="admin-empty">Not enough data yet (need ≥ 3 ratings per date).</li>';
+      return;
+    }
+    listEl.innerHTML = items.slice(0, 10).map(item => `
+      <li class="top10-item">
+        <span class="top10-meta">
+          <span class="top10-date">${item.date}</span>
+          <span class="top10-puzzle">${PUZZLE_NAMES[item.puzzle] || item.puzzle}</span>
+        </span>
+        <span class="top10-score">${item.mean.toFixed(1)}</span>
+      </li>`).join('');
+  }
+
+  renderTop10(document.getElementById('top10-hardest'), byMeanDesc);
+  renderTop10(document.getElementById('top10-easiest'), byMeanAsc);
+}
+
+function fmtAdminDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    + ' · '
+    + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Event handlers
+═══════════════════════════════════════════════════════════════ */
+calBtn.addEventListener('click', () => {
+  datePicker.showPicker ? datePicker.showPicker() : datePicker.click();
+});
+datePicker.addEventListener('change', () => {
+  if (!datePicker.value) return;
+  applyDate(datePicker.value, 0);
+});
+
+function handleTextInput(commit) {
+  const parsed = parseDate(dateDisplay.value);
+  if (parsed) {
+    applyDate(parsed, 0);
+  } else if (commit) {
+    dateDisplay.value = isoToDisplay(currentDate);
+  }
+}
+dateDisplay.addEventListener('keydown', e => {
+  if (e.key === 'Enter')  { handleTextInput(true); dateDisplay.blur(); }
+  if (e.key === 'Escape') { dateDisplay.value = isoToDisplay(currentDate); dateDisplay.blur(); }
+});
+dateDisplay.addEventListener('blur', () => handleTextInput(true));
+
+prevBtn.addEventListener('click', () => applyDate(shiftDate(currentDate, -1), -1));
+nextBtn.addEventListener('click', () => applyDate(shiftDate(currentDate, +1), +1));
+
+selector.addEventListener('click', e => {
+  const btn = e.target.closest('.pill-btn');
+  if (btn) applyPuzzle(btn.dataset.puzzle);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   Bootstrap
+═══════════════════════════════════════════════════════════════ */
+(function init() {
+  if (window.location.pathname === '/oreomilo') return;
+  const today = todayISO();
+  currentDate     = today;
+  datePicker.max  = today;
+  syncUI(today);
+  fetch('./data.json')
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(data => { DATA = data; renderResults(); results.classList.add('fade-in'); })
+    .catch(() => { results.innerHTML = `<p class="empty-state">Could not load puzzle data.</p>`; });
+})();
+</script>
+</body>
+</html>
+<!--
+Run these in the Supabase SQL Editor to enable RLS on both tables:
+
+-- alter table puzzle_ratings enable row level security;
+-- alter table app_ratings enable row level security;
+-- create policy "Anyone can insert puzzle ratings" on puzzle_ratings for insert with check (true);
+-- create policy "Anyone can read puzzle ratings" on puzzle_ratings for select using (true);
+-- create policy "Anyone can insert app ratings" on app_ratings for insert with check (true);
+-- create policy "Only admin reads app ratings" on app_ratings for select using (false);
+-->
