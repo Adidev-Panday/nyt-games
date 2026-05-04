@@ -26,27 +26,28 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run update script
-        run: python scripts/update_data.py
-
-      - name: Check for changes
-        id: diff
-        run: |
-          if git diff --quiet data.json; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push updated data
-        if: steps.diff.outputs.changed == 'true'
+      - name: Configure git identity
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
-          git commit -m "chore: daily puzzle data update [skip ci]"
-          git push
 
-      - name: Nothing to commit
-        if: steps.diff.outputs.changed == 'false'
-        run: echo "No new data today, skipping commit"
+      - name: Run update script
+        run: |
+          python scripts/update_data.py
+          EXIT_CODE=$?
+          echo "Script exit code: $EXIT_CODE"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "::error::update_data.py failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+
+      - name: Verify data.json is up to date
+        run: |
+          if git diff --quiet data.json; then
+            echo "data.json is clean — script committed all changes successfully"
+          else
+            echo "::warning::data.json has uncommitted changes after script ran — committing now as fallback"
+            git add data.json
+            git commit -m "chore: daily puzzle data update (workflow fallback) [skip ci]"
+            git push
+          fi

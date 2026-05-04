@@ -7,6 +7,7 @@ Usage (from repo root):  python scripts/update_data.py
 """
 import json
 import re
+import subprocess
 import sys
 import os
 from collections import Counter
@@ -65,7 +66,7 @@ def fetch_wordle_for_date(d):
 
 def update_wordle(data):
     added = []
-    # Check the last 7 days so we catch any dates the repo added retroactively
+    # Check the last 7 days so we backfill any days the workflow missed
     for i in range(7, -1, -1):
         d   = TODAY - timedelta(days=i)
         iso = d.isoformat()
@@ -188,8 +189,9 @@ def fetch_bee_for_date(d):
 
 def update_spelling_bee(data):
     added = []
-    # Try today then yesterday — nytbee sometimes lags by a day
-    for i in range(2):
+    # Check the last 7 days so we backfill any days the workflow missed
+    # (nytbee.com sometimes lags by a day but publishes retroactively)
+    for i in range(7):
         d   = TODAY - timedelta(days=i)
         iso = d.isoformat()
         if data.get(iso, {}).get("spelling_bee"):
@@ -200,6 +202,26 @@ def update_spelling_bee(data):
             data[iso]["spelling_bee"] = result
             added.append(iso)
     return added
+
+
+# ── Auto-commit and push ──────────────────────────────────────────────────────
+
+def auto_commit_and_push():
+    diff = subprocess.run(
+        ["git", "diff", "--quiet", "data.json"],
+        cwd=REPO_ROOT,
+    )
+    if diff.returncode == 0:
+        print("No new data, nothing to commit")
+        return
+
+    subprocess.run(["git", "add", "data.json"], cwd=REPO_ROOT, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "chore: daily puzzle data update [skip ci]"],
+        cwd=REPO_ROOT, check=True,
+    )
+    subprocess.run(["git", "push", "origin", "main"], cwd=REPO_ROOT, check=True)
+    print("Auto-committed and pushed to GitHub")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -256,6 +278,9 @@ def main():
             return 1
     else:
         print("No changes — data.json not modified")
+
+    # Auto-commit and push
+    auto_commit_and_push()
 
     return 0
 
