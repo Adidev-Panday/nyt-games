@@ -217,7 +217,7 @@ def auto_commit_and_push():
 
     subprocess.run(["git", "add", "data.json"], cwd=REPO_ROOT, check=True)
     subprocess.run(
-        ["git", "commit", "-m", "chore: daily puzzle data update [skip ci]"],
+        ["git", "commit", "-m", "chore: daily puzzle data update"],
         cwd=REPO_ROOT, check=True,
     )
     subprocess.run(["git", "push", "origin", "main"], cwd=REPO_ROOT, check=True)

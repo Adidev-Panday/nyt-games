@@ -48,6 +48,6 @@ jobs:
           else
             echo "::warning::data.json has uncommitted changes after script ran — committing now as fallback"
             git add data.json
-            git commit -m "chore: daily puzzle data update (workflow fallback) [skip ci]"
+            git commit -m "chore: daily puzzle data update (workflow fallback)"
             git push
           fi
