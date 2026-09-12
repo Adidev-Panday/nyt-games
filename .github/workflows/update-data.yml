@@ -6,6 +6,10 @@ on:
     - cron: '0 16 * * *'  # 16:00 UTC — safety-net fallback
   workflow_dispatch:       # manual trigger from Actions tab
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false  # let an in-flight run finish and push before a new one starts
+
 jobs:
   update:
     runs-on: ubuntu-latest
