@@ -25,6 +25,17 @@ TIMEOUT = 15
 
 COLOR_MAP = {0: "yellow", 1: "green", 2: "blue", 3: "purple"}
 
+# Supabase project backing the puzzle/app rating widgets (see index.html).
+# Free-tier Supabase projects auto-pause after a period of inactivity, which
+# breaks the rating system. This is the anon (public) key already embedded
+# client-side in index.html — safe to keep here too.
+SUPABASE_URL = "https://ytkecdkyxectfxbaotgs.supabase.co"
+SUPABASE_ANON_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6"
+    "Inl0a2VjZGt5eGVjdGZ4YmFvdGdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzAwMzEs"
+    "ImV4cCI6MjA5MzEwNjAzMX0.mxlV7jJASiBEhOXk5shEk58lQXyL6JA543Ca3lUSUDk"
+)
+
 BLANK_ENTRY = {
     "wordle": None,
     "connections": None,
@@ -204,6 +215,30 @@ def update_spelling_bee(data):
     return added
 
 
+# ── Supabase keep-alive ───────────────────────────────────────────────────────
+
+def ping_supabase():
+    """Send a lightweight authenticated request to Supabase so the free-tier
+    project registers activity and doesn't auto-pause. Never allowed to stop
+    the puzzle update from running."""
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/puzzle_ratings",
+            params={"select": "id", "limit": 1},
+            headers={
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+            },
+            timeout=TIMEOUT,
+        )
+        if r.status_code == 200:
+            print("Supabase ping OK")
+        else:
+            print(f"Supabase ping returned {r.status_code}")
+    except Exception as e:
+        print(f"Supabase ping failed: {e}", file=sys.stderr)
+
+
 # ── Auto-commit and push ──────────────────────────────────────────────────────
 
 def auto_commit_and_push():
@@ -227,6 +262,10 @@ def auto_commit_and_push():
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    # Keep the Supabase rating-system project awake first, regardless of
+    # what happens below.
+    ping_supabase()
+
     print(f"Loading data.json from {DATA_JSON}")
     try:
         data = load_data()

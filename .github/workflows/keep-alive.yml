@@ -1,0 +1,50 @@
+name: Keep Supabase alive
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # once daily at midnight UTC
+  workflow_dispatch:       # manual trigger from Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Ping Supabase
+        continue-on-error: true
+        run: |
+          python - <<'EOF'
+          import requests
+
+          SUPABASE_URL = "https://ytkecdkyxectfxbaotgs.supabase.co"
+          SUPABASE_ANON_KEY = (
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6"
+              "Inl0a2VjZGt5eGVjdGZ4YmFvdGdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzAwMzEs"
+              "ImV4cCI6MjA5MzEwNjAzMX0.mxlV7jJASiBEhOXk5shEk58lQXyL6JA543Ca3lUSUDk"
+          )
+
+          try:
+              r = requests.get(
+                  f"{SUPABASE_URL}/rest/v1/puzzle_ratings",
+                  params={"select": "id", "limit": 1},
+                  headers={
+                      "apikey": SUPABASE_ANON_KEY,
+                      "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+                  },
+                  timeout=15,
+              )
+              print(f"Supabase ping status: {r.status_code}")
+          except Exception as e:
+              print(f"Supabase ping failed: {e}")
+          EOF
